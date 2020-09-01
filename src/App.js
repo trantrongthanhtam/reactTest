@@ -52,20 +52,23 @@ function App() {
   const [editStudentId, setEditStudentId] = useState(0);
 
   function handleFilter(event) {
+    const studentName = document.getElementById("tenId").value;
+    const className = document.getElementById("lopId").value;
+    const fromDate = new Date(
+      document.getElementById("tungayId").value.split("-")
+    );
+    const toDate = new Date(
+      document.getElementById("denngayId").value.split("-")
+    );
     event.preventDefault();
     if (!editMode) {
-      const studentName = document.getElementById("tenId").value;
-      const className = document.getElementById("lopId").value;
       const getGender = document.getElementsByName("gioitinh");
       const gender = getGender[0].checked
         ? "male"
         : getGender[1].checked
         ? "female"
         : "All";
-      const fromDate = document.getElementById("tungayId").value;
-      const toDate = document.getElementById("denngayId").value;
 
-      console.log(fromDate.toString("dd/MM/yyyy"));
       setStudentFilter(
         studentdata.filter((item) => {
           const d = item.dob.split("/");
@@ -73,23 +76,27 @@ function App() {
           return (
             item.name.toLowerCase().includes(studentName.toLowerCase()) &&
             (className === "All" || item.class === className) &&
-            (gender === "All" || item.gender === gender)
+            (gender === "All" || item.gender === gender) &&
+            date > fromDate &&
+            date < toDate
           );
         })
       );
     }
 
     if (editStudentId > 0) {
+      const date = document.getElementById("tungayId").value.split("-");
       console.log("get here");
       studentdata.forEach((student, index) => {
         if (student.id === editStudentId) {
           let updateStudent = {
             ...student,
-            name: document.getElementById("tenId").value,
-            class: document.getElementById("lopId").value,
+            name: studentName,
+            class: className,
             gender: document.getElementsByName("gioitinh")[0].checked
               ? "male"
               : "female",
+            dob: date[2] + "/" + date[1] + "/" + date[0],
           };
           studentdata[index] = updateStudent;
         }
@@ -103,6 +110,7 @@ function App() {
   }
 
   function handleAddStudent() {
+    const date = document.getElementById("tungayId").value.split("-");
     studentdata.push({
       id: studentdata.length + 1,
       name: document.getElementById("tenId").value,
@@ -110,7 +118,7 @@ function App() {
       gender: document.getElementsByName("gioitinh")[0].checked
         ? "male"
         : "female",
-      dob: document.getElementById("tungayId").value,
+      dob: date[2] + "/" + date[1] + "/" + date[0],
       grades: [0, 0, 0],
     });
     let updateStudentData = [...studentdata];
@@ -132,7 +140,9 @@ function App() {
   }
 
   function handleDeleteStudent(deleteStudent) {
-    let updateStudentData = studentdata.filter((student)=> student.id !== deleteStudent.id );
+    let updateStudentData = studentdata.filter(
+      (student) => student.id !== deleteStudent.id
+    );
     setStudentFilter(updateStudentData);
     studentdata = [...updateStudentData];
   }
