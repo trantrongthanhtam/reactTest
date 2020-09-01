@@ -1,3 +1,17 @@
 .studentList {
     width: 100%;
 }
+
+table {
+    border-spacing: 0;
+}
+table *{
+    border: 0.2px black solid;
+}
+
+thead {
+    background-color: lightblue;
+}
+th {
+    min-width: 50px;
+}

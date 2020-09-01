@@ -21,14 +21,14 @@ const studentdata = [
   {
     name: "Nguyễn Linh",
     class: "10B",
-    dob: "8/5/1992",
+    dob: "08/05/1992",
     gender: "female",
     grades: [5, 8, 4.5],
   },
   {
     name: "nguyễn Hùng",
     class: "10D",
-    dob: "30/2/1996",
+    dob: "25/02/1996",
     gender: "male",
     grades: [8.5, 7, 5.6],
   },
@@ -41,29 +41,48 @@ const studentdata = [
   },
 ];
 
-// localStorage.setItem("studentList", studentdata);
+localStorage.setItem("studentList", JSON.stringify(studentdata));
 
 function App() {
   const [studentfilter, setStudentFilter] = useState(studentdata);
   function handleFilter(event) {
     event.preventDefault();
 
-    var studentName = document.getElementById("tenId").value;
-    var className = document.getElementById("lopId").value;
-    var gender = document.getElementById("gioitinhId").checked?"male":"female";
-    setStudentFilter(studentdata.filter((item)=> item.name.includes(studentName) && (className === "All" || item.class === className) && item.gender === gender))
+    const studentName = document.getElementById("tenId").value;
+    const className = document.getElementById("lopId").value;
+    const getGender = document.getElementsByName("gioitinh");
+    const gender = getGender[0].checked
+      ? "male"
+      : getGender[1].checked
+      ? "female"
+      : "All";
+    const fromDate = document.getElementById("tungayId").value;
+    const toDate = document.getElementById("denngayId").value;
+
+    console.log(gender);
+    setStudentFilter(
+      studentdata.filter((item) => {
+        const d = item.dob.split("/");
+        let date = new Date(d[2], d[1] - 1, d[0]);
+        return (
+          item.name.toLowerCase().includes(studentName.toLowerCase()) &&
+          (className === "All" || item.class === className) &&
+          (gender === "All" || item.gender === gender)
+        );
+      })
+    );
   }
 
   return (
     <div className="App">
       <h2>Form Quản Lý Học Sinh</h2>
       <Form id="submitForm" className="form" onSubmit={handleFilter}>
-        <FormGroup>
-          <Label for="tenId">Tên</Label>
+        <FormGroup className="form__group">
+          <Label for="tenId">Tên:</Label>
           <Input type="text" id="tenId" placeholder="Nhập tên học sinh" />
         </FormGroup>
-        <FormGroup>
-          <Label for="lopId">Lớp</Label>
+        <FormGroup className="form__group">
+          <Label for="lopId">Lớp:</Label>
           <Input type="select" id="lopId">
             <option>All</option>
             <option>10A</option>
@@ -72,14 +91,33 @@ function App() {
             <option>10D</option>
           </Input>
         </FormGroup>
-        <FormGroup>
-          <Label for="gioitinhId">Giới tính</Label>
-          <Input type="checkbox" id="gioitinhId"></Input>
+        <FormGroup className="form__group" check inline>
+          <Label check> Giới tính: </Label>
+        </FormGroup>
+        <FormGroup className="form__group" check inline>
+          <Label check>
+            <Input type="radio" name="gioitinh" />
+            Nam
+          </Label>
+        </FormGroup>
+        <FormGroup className="form__group" check inline>
+          <Label check>
+            <Input type="radio" name="gioitinh" />
+            Nữ
+          </Label>
+        </FormGroup>
+        <FormGroup className="form__group" inline>
+          <Label for="tungayId">Ngày sinh:</Label>
+          <Input type="date" id="tungayId"></Input>
+          </FormGroup>
+          <FormGroup className="form__group" inline>
+          <Label for="denngayId"> ~ </Label>
+          <Input type="date" id="denngayId"></Input>
         </FormGroup>
         <FormGroup className="buttongroup">
-          <Button>Tìm Kiếm</Button>
-          <Button>Thêm Mới</Button>
-          <Button>Xóa</Button>
+          <Button className="btn-success">Tìm Kiếm</Button>
+          <Button className="btn btn-info">Thêm Mới</Button>
+          <Button className="btn-danger">Xóa</Button>
         </FormGroup>
       </Form>
       <StudentList list={studentfilter} />

@@ -2,12 +2,14 @@
   text-align: center;
 }
 
-.form *{
-  padding:5px;
-}
-
 .form select {
   width: 190px;
+}
+
+.form__group{
+  width: 50%;
+  text-align: left;
+  margin:0 auto;
 }
 .buttongroup {
   width: 50%;
