@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import StudentList from "./components/StudentList";
 import { Button, Label, FormGroup, Input, Form } from "reactstrap";
 
-const studentdata = [
+let studentdata = [
   {
+    id: 1,
     name: "Nguyen Long",
     class: "10A",
     dob: "11/10/1992",
@@ -12,6 +13,7 @@ const studentdata = [
     grades: [1.5, 4.25, 5],
   },
   {
+    id: 2,
     name: "Nguyễn Quang",
     class: "10C",
     dob: "11/11/1993",
@@ -19,6 +21,7 @@ const studentdata = [
     grades: [6, 7, 8],
   },
   {
+    id: 3,
     name: "Nguyễn Linh",
     class: "10B",
     dob: "08/05/1992",
@@ -26,6 +29,7 @@ const studentdata = [
     grades: [5, 8, 4.5],
   },
   {
+    id: 4,
     name: "nguyễn Hùng",
     class: "10D",
     dob: "25/02/1996",
@@ -33,6 +37,7 @@ const studentdata = [
     grades: [8.5, 7, 5.6],
   },
   {
+    id: 5,
     name: "Trần Nga",
     class: "10A",
     dob: "11/12/1997",
@@ -41,42 +46,101 @@ const studentdata = [
   },
 ];
 
-localStorage.setItem("studentList", JSON.stringify(studentdata));
-
 function App() {
   const [studentfilter, setStudentFilter] = useState(studentdata);
+  const [editMode, setEditMode] = useState(false);
+  const [editStudentId, setEditStudentId] = useState(0);
+
   function handleFilter(event) {
     event.preventDefault();
+    if (!editMode) {
+      const studentName = document.getElementById("tenId").value;
+      const className = document.getElementById("lopId").value;
+      const getGender = document.getElementsByName("gioitinh");
+      const gender = getGender[0].checked
+        ? "male"
+        : getGender[1].checked
+        ? "female"
+        : "All";
+      const fromDate = document.getElementById("tungayId").value;
+      const toDate = document.getElementById("denngayId").value;
 
-    const studentName = document.getElementById("tenId").value;
-    const className = document.getElementById("lopId").value;
-    const getGender = document.getElementsByName("gioitinh");
-    const gender = getGender[0].checked
-      ? "male"
-      : getGender[1].checked
-      ? "female"
-      : "All";
-    const fromDate = document.getElementById("tungayId").value;
-    const toDate = document.getElementById("denngayId").value;
+      console.log(fromDate.toString("dd/MM/yyyy"));
+      setStudentFilter(
+        studentdata.filter((item) => {
+          const d = item.dob.split("/");
+          let date = new Date(d[2], d[1] - 1, d[0]);
+          return (
+            item.name.toLowerCase().includes(studentName.toLowerCase()) &&
+            (className === "All" || item.class === className) &&
+            (gender === "All" || item.gender === gender)
+          );
+        })
+      );
+    }
 
-    console.log(gender);
-    setStudentFilter(
-      studentdata.filter((item) => {
-        const d = item.dob.split("/");
-        let date = new Date(d[2], d[1] - 1, d[0]);
-        return (
-          item.name.toLowerCase().includes(studentName.toLowerCase()) &&
-          (className === "All" || item.class === className) &&
-          (gender === "All" || item.gender === gender)
-        );
-      })
-    );
+    if (editStudentId > 0) {
+      console.log("get here");
+      studentdata.forEach((student, index) => {
+        if (student.id === editStudentId) {
+          let updateStudent = {
+            ...student,
+            name: document.getElementById("tenId").value,
+            class: document.getElementById("lopId").value,
+            gender: document.getElementsByName("gioitinh")[0].checked
+              ? "male"
+              : "female",
+          };
+          studentdata[index] = updateStudent;
+        }
+      });
+      let updateStudentData = [...studentdata];
+      setStudentFilter(updateStudentData);
+      document.getElementById("submitForm").reset();
+      setEditMode(false);
+      setEditStudentId(0);
+    }
+  }
+
+  function handleAddStudent() {
+    studentdata.push({
+      id: studentdata.length + 1,
+      name: document.getElementById("tenId").value,
+      class: document.getElementById("lopId").value,
+      gender: document.getElementsByName("gioitinh")[0].checked
+        ? "male"
+        : "female",
+      dob: document.getElementById("tungayId").value,
+      grades: [0, 0, 0],
+    });
+    let updateStudentData = [...studentdata];
+    setStudentFilter(updateStudentData);
+  }
+
+  function handleStudentChange(student) {
+    console.log(student);
+    setEditMode(true);
+    setEditStudentId(student.id);
+    document.getElementById("tenId").value = student.name;
+    document.getElementById("lopId").value = student.class;
+    if (student.gender === "male") {
+      document.getElementsByName("gioitinh")[0].checked = true;
+    } else document.getElementsByName("gioitinh")[1].checked = true;
+    const stringToDate = student.dob.split("/");
+    document.getElementById("tungayId").value =
+      stringToDate[2] + "-" + stringToDate[1] + "-" + stringToDate[0];
+  }
+
+  function handleDeleteStudent(deleteStudent) {
+    let updateStudentData = studentdata.filter((student)=> student.id !== deleteStudent.id );
+    setStudentFilter(updateStudentData);
+    studentdata = [...updateStudentData];
   }
 
   return (
     <div className="App">
       <h2>Form Quản Lý Học Sinh</h2>
-      <Form id="submitForm" className="form" onSubmit={handleFilter}>
+      <Form id="submitForm" className="form">
         <FormGroup className="form__group">
           <Label for="tenId">Tên:</Label>
           <Input type="text" id="tenId" placeholder="Nhập tên học sinh" />
@@ -109,18 +173,26 @@ function App() {
         <FormGroup className="form__group" inline>
           <Label for="tungayId">Ngày sinh:</Label>
           <Input type="date" id="tungayId"></Input>
-          </FormGroup>
-          <FormGroup className="form__group" inline>
+        </FormGroup>
+        <FormGroup className="form__group" inline>
           <Label for="denngayId"> ~ </Label>
           <Input type="date" id="denngayId"></Input>
         </FormGroup>
         <FormGroup className="buttongroup">
-          <Button className="btn-success">Tìm Kiếm</Button>
-          <Button className="btn btn-info">Thêm Mới</Button>
+          <Button className="btn-success" onClick={handleFilter}>
+            {editMode ? "Cập nhật" : "Tìm kiếm"}
+          </Button>
+          <Button className="btn btn-info" onClick={handleAddStudent}>
+            Thêm Mới
+          </Button>
           <Button className="btn-danger">Xóa</Button>
         </FormGroup>
       </Form>
-      <StudentList list={studentfilter} />
+      <StudentList
+        list={studentfilter}
+        getStudent={handleStudentChange}
+        deleteStudent={handleDeleteStudent}
+      />
     </div>
   );
 }
