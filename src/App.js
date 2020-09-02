@@ -69,6 +69,8 @@ function App() {
         ? "female"
         : "All";
 
+        console.log(fromDate);
+
       setStudentFilter(
         studentdata.filter((item) => {
           const d = item.dob.split("/");
@@ -77,8 +79,7 @@ function App() {
             item.name.toLowerCase().includes(studentName.toLowerCase()) &&
             (className === "All" || item.class === className) &&
             (gender === "All" || item.gender === gender) &&
-            date > fromDate &&
-            date < toDate
+            (document.getElementById("tungayId").value === "" || (date > fromDate && date < toDate))
           );
         })
       );
@@ -123,6 +124,9 @@ function App() {
     });
     let updateStudentData = [...studentdata];
     setStudentFilter(updateStudentData);
+    document.getElementById("submitForm").reset();
+    setEditMode(false);
+    setEditStudentId(0);
   }
 
   function handleStudentChange(student) {
@@ -145,6 +149,9 @@ function App() {
     );
     setStudentFilter(updateStudentData);
     studentdata = [...updateStudentData];
+    document.getElementById("submitForm").reset();
+    setEditMode(false);
+    setEditStudentId(0);
   }
 
   return (
@@ -195,7 +202,13 @@ function App() {
           <Button className="btn btn-info" onClick={handleAddStudent}>
             Thêm Mới
           </Button>
-          <Button className="btn-danger">Xóa</Button>
+          <Button
+            className="btn-danger"
+            onClick={() => handleDeleteStudent({ id: editStudentId })}
+            disabled={!editMode}
+          >
+            Xóa
+          </Button>
         </FormGroup>
       </Form>
       <StudentList
